@@ -35,12 +35,12 @@ Sí coinciden.
 | **6** | 5e-05 % | 9 | 1.648721265035962 | 3.43549e-07 % |
 | **17** | 5e-16 % | 16 | 1.648721270700128 | 2.69354e-14 % |
 
-**1. ¿Cuántos términos hacen falta en cada caso?**
+1. ¿Cuántos términos hacen falta en cada caso?
 Hacen falta 6 términos para 3 cifras, 9 términos para 6 cifras y 16 términos para 17 cifras.
-**2. En cada fila de la tabla, ¿εa es mayor o menor que εt? ¿Por qué conviene detenerse con εa?**
-En las iteraciones, el error relativo aproximado ($ea$) es siempre **mayor** (conservador) que el error verdadero ($et$). Conviene detenerse utilizando $ea$ porque en un problema real de ingeniería **el valor verdadero es desconocido**, por lo que resulta imposible calcular $et$; por el contrario, $ea$ nos permite saber cuándo detenernos evaluando únicamente qué tanto está cambiando el resultado usando las propias aproximaciones iterativas que vamos calculando.
-**3. Con 17 cifras el programa termina. ¿Cuántas cifras del resultado son correctas en realidad?**
-   **Relaciónenlo con 0.1 + 0.2 de la Tarea 1.**
+2. En cada fila de la tabla, ¿εa es mayor o menor que εt? ¿Por qué conviene detenerse con εa?
+En las iteraciones, el error relativo aproximado (εa) es siempre **mayor** (conservador) que el error verdadero (εt). Conviene detenerse utilizando εa porque en un problema real de ingeniería **el valor verdadero es desconocido**, por lo que resulta imposible calcular εt; por el contrario, εa nos permite saber cuándo detenernos evaluando únicamente qué tanto está cambiando el resultado usando las propias aproximaciones iterativas que vamos calculando.
+3. Con 17 cifras el programa termina. ¿Cuántas cifras del resultado son correctas en realidad?
+   Relaciónenlo con 0.1 + 0.2 de la Tarea 1.
 Aunque el criterio de paro alcance el objetivo para 17 cifras, en realidad solo alrededor de **15 o 16 cifras** son matemáticamente correctas. Esto se relaciona directamente con el problema de $0.1 + 0.2$ de la Tarea 1: la precisión de la máquina. La computadora utiliza un estándar de precisión doble de 64 bits para el punto flotante, lo que significa que su memoria para los decimales no es infinita. A partir de la cifra número 16, el truncamiento para guardar los datos en binario genera ruido numérico y pequeños errores de redondeo, haciendo imposible obtener 17 cifras puramente exactas.
 
 ## Uso de inteligencia artificial
