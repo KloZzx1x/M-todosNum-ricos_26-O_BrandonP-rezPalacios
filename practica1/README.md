@@ -21,8 +21,8 @@ Sí coinciden.
 ## 2. Las dos líneas que completamos en `maclaurin.c`
 
 ```c
-/* COMPLETAR 1 */
-/* COMPLETAR 2 */
+termino = termino * X / n;
+ea = fabs((aprox - anterior) / aprox) * 100.0;
 ```
 
 ![C](img/03-c.png)
