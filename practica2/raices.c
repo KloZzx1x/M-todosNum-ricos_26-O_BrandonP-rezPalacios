@@ -17,39 +17,37 @@
 #include <stdio.h>
 
 /* ======================== BLOQUE DEL PROBLEMA ======================== */
-/* Es lo único que se cambia para resolver otra ecuación (ejercicio 4).  */
+/* Ecuación 13 · Electrónica · Voltaje en un diodo con resistencia en serie */
 
-#define DESCRIPCION "f(c) = g m / c (1 - exp(-c t / m)) - v,  g = 9.8, m = 68.1, t = 10, v = 40"
-#define DESCR_G     "g(c) = g m / v (1 - exp(-c t / m))"
+#define DESCRIPCION "f(V) = Is (exp(V/VT) - 1) - (5 - V)/1000,  Is = 1e-12, VT = 0.02585"
+#define DESCR_G     "g(V) = VT ln((5 - V) / (1000 Is) + 1)"
 
-static const double GRAV   = 9.8;    /* gravedad, m/s^2                    */
-static const double MASA   = 68.1;   /* masa del paracaidista, kg          */
-static const double TIEMPO = 10.0;   /* tiempo de caída, s                 */
-static const double VEL    = 40.0;   /* velocidad medida, m/s              */
+static const double IS = 1e-12;   /* corriente de saturación, A */
+static const double VT = 0.02585;   /* voltaje térmico, V */
+static const double VS = 5.0;   /* fuente, V */
+static const double RES = 1000.0;   /* resistencia, ohm */
 
-static const double A = 12.0, B = 16.0;  /* intervalo de los métodos cerrados */
-static const double X0    = 12.5;        /* inicio de los métodos abiertos    */
-static const double DELTA = 0.05;        /* incremento de la secante modificada */
+static const double A = 0.0, B = 1.0;  /* intervalo de los métodos cerrados */
+static const double X0    = 0.7;        /* inicio de los métodos abiertos    */
+static const double DELTA = 0.001;        /* incremento de la secante modificada */
 static const double TOL   = 0.5;         /* tolerancia: ea en %               */
 #define NMAX 50                          /* máximo de iteraciones             */
 
-/* La función cuya raíz se busca: el coeficiente de arrastre c, en kg/s. */
-static double f(double c)
+static double f(double x)
 {
-    return GRAV * MASA / c * (1.0 - exp(-c * TIEMPO / MASA)) - VEL;
+    return IS*(exp(x/VT) - 1) - (VS - x)/RES;
 }
 
 /* Su derivada, para Newton-Raphson. */
-static double fp(double c)
+static double fp(double x)
 {
-    return GRAV * MASA / c * (TIEMPO / MASA) * exp(-c * TIEMPO / MASA)
-         - GRAV * MASA / (c * c) * (1.0 - exp(-c * TIEMPO / MASA));
+    return IS/VT*exp(x/VT) + 1/RES;
 }
 
-/* Despeje x = g(x) para punto fijo: c = g m / v (1 - exp(-c t / m)). */
-static double g(double c)
+/* Despeje x = g(x) para punto fijo. */
+static double g(double x)
 {
-    return GRAV * MASA / VEL * (1.0 - exp(-c * TIEMPO / MASA));
+    return VT*log((VS - x)/(RES*IS) + 1);
 }
 
 /* ===================================================================== */
@@ -69,7 +67,7 @@ typedef struct {
 static double error_aprox(double nuevo, double anterior)
 {
     /* COMPLETAR 1. Ojo: en C, abs() es para enteros; para double se usa fabs(). */
-    return 0.0;   /* <- sustituya 0.0 por la expresión correcta */
+    return fabs((nuevo - anterior) / nuevo) * 100.0;
 }
 
 static void fila_cerrado(int k, double a, double b, double x, double ea, int con_ea)
@@ -128,7 +126,7 @@ static Resultado falsa_posicion(double a, double b)
     printf("%s\n", ENC_CERRADO);
     for (int k = 1; k <= NMAX; ++k) {
         /* COMPLETAR 2: el punto donde la recta corta el eje x. */
-        x = 0.0;   /* <- sustituya 0.0 por la expresión correcta */
+        x = (a * f(b) - b * f(a)) / (f(b) - f(a));
         if (k > 1) ea = error_aprox(x, x_ant);
         fila_cerrado(k, a, b, x, ea, k > 1);
         r.x = x; r.ea = ea; r.k = k;
@@ -152,7 +150,7 @@ static Resultado punto_fijo(double x)
     fila_abierto(0, x, 0.0, 0);
     for (int k = 1; k <= NMAX; ++k) {
         /* COMPLETAR 3: la siguiente aproximación. */
-        x_nuevo = 0.0;   /* <- sustituya 0.0 por la expresión correcta */
+        x_nuevo = g(x);
         ea = error_aprox(x_nuevo, x);
         x = x_nuevo;
         fila_abierto(k, x, ea, 1);
@@ -174,7 +172,7 @@ static Resultado newton(double x)
     fila_abierto(0, x, 0.0, 0);
     for (int k = 1; k <= NMAX; ++k) {
         /* COMPLETAR 4: la fórmula de Newton-Raphson, con f y fp. */
-        x_nuevo = 0.0;   /* <- sustituya 0.0 por la expresión correcta */
+        x_nuevo = x - f(x) / fp(x);
         ea = error_aprox(x_nuevo, x);
         x = x_nuevo;
         fila_abierto(k, x, ea, 1);
@@ -196,7 +194,7 @@ static Resultado secante_modificada(double x, double delta)
     fila_abierto(0, x, 0.0, 0);
     for (int k = 1; k <= NMAX; ++k) {
         /* COMPLETAR 5: la pendiente es (f(x + delta) - f(x)) / delta. */
-        x_nuevo = 0.0;   /* <- sustituya 0.0 por la expresión correcta */
+        x_nuevo = x - f(x) / ((f(x + delta) - f(x)) / delta);
         ea = error_aprox(x_nuevo, x);
         x = x_nuevo;
         fila_abierto(k, x, ea, 1);

@@ -23,38 +23,36 @@ import matplotlib.pyplot as plt
 from scipy.optimize import brentq
 
 # ======================== BLOQUE DEL PROBLEMA ========================
-# Es lo único que se cambia para resolver otra ecuación (ejercicio 4).
+# Ecuación 13 · Electrónica · Voltaje en un diodo con resistencia en serie
 
-DESCRIPCION = ("f(c) = g m / c (1 - exp(-c t / m)) - v,  "
-               "g = 9.8, m = 68.1, t = 10, v = 40")
-DESCR_G = "g(c) = g m / v (1 - exp(-c t / m))"
+DESCRIPCION = 'f(V) = Is (exp(V/VT) - 1) - (5 - V)/1000,  Is = 1e-12, VT = 0.02585'
+DESCR_G = 'g(V) = VT ln((5 - V) / (1000 Is) + 1)'
 
-GRAV = 9.8          # gravedad, m/s²
-MASA = 68.1         # masa del paracaidista, kg
-TIEMPO = 10.0       # tiempo de caída, s
-VEL = 40.0          # velocidad medida, m/s
+IS = 1e-12   # corriente de saturación, A
+VT = 0.02585   # voltaje térmico, V
+VS = 5.0   # fuente, V
+RES = 1000.0   # resistencia, ohm
 
-A, B = 12.0, 16.0   # intervalo de los métodos cerrados
-X0 = 12.5           # inicio de los métodos abiertos
-DELTA = 0.05        # incremento de la secante modificada
+A, B = 0.0, 1.0   # intervalo de los métodos cerrados
+X0 = 0.7         # inicio de los métodos abiertos
+DELTA = 0.001      # incremento de la secante modificada
 TOL = 0.5           # tolerancia: ea en %
 NMAX = 50           # máximo de iteraciones
 
 
-def f(c):
-    """La función cuya raíz se busca: el coeficiente de arrastre c, en kg/s."""
-    return GRAV * MASA / c * (1.0 - math.exp(-c * TIEMPO / MASA)) - VEL
+def f(x):
+    """La función cuya raíz se busca."""
+    return IS*(math.exp(x/VT) - 1) - (VS - x)/RES
 
 
-def fp(c):
+def fp(x):
     """Su derivada, para Newton-Raphson."""
-    return (GRAV * MASA / c * (TIEMPO / MASA) * math.exp(-c * TIEMPO / MASA)
-            - GRAV * MASA / (c * c) * (1.0 - math.exp(-c * TIEMPO / MASA)))
+    return IS/VT*math.exp(x/VT) + 1/RES
 
 
-def g(c):
-    """Despeje x = g(x) para punto fijo: c = g m / v (1 - exp(-c t / m))."""
-    return GRAV * MASA / VEL * (1.0 - math.exp(-c * TIEMPO / MASA))
+def g(x):
+    """Despeje x = g(x) para punto fijo."""
+    return VT*math.log((VS - x)/(RES*IS) + 1)
 
 # =====================================================================
 
@@ -215,7 +213,40 @@ def graficar(resultados, carpeta="img"):
     # Funciones útiles: plt.figure, plt.plot, plt.semilogy, plt.axhline,
     # plt.xlabel, plt.ylabel, plt.title, plt.legend, plt.grid, plt.savefig y
     # plt.close. Guarde con plt.savefig(os.path.join(carpeta, "funcion.png")).
-    print("graficar(): falta completar; todavía no se generan las figuras.")
+    # Figura 1: Convergencia (ea vs k en escala logarítmica)
+    plt.figure(figsize=(10, 6))
+    for r in resultados:
+        # Filtramos para no graficar la iteración 0 (que no tiene ea)
+        k_vals = [paso[0] for paso in r["historia"] if paso[2] is not None and paso[2] > 0]
+        ea_vals = [paso[2] for paso in r["historia"] if paso[2] is not None and paso[2] > 0]
+        plt.semilogy(k_vals, ea_vals, marker='o', label=f'{r["nombre"]} ({r["k"]} iter.)')
+
+    plt.axhline(y=TOL, color='black', linestyle='--', label=f'tolerancia {TOL} %')
+    plt.title("Convergencia de los cinco métodos")
+    plt.xlabel("iteración k")
+    plt.ylabel("ea (%)")
+    plt.grid(True, which="both", linestyle="--", alpha=0.5)
+    plt.legend()
+    plt.savefig(f"{carpeta}/convergencia.png", bbox_inches='tight')
+    plt.close()
+
+    # Figura 2: Función f(x) y las raíces encontradas
+    plt.figure(figsize=(10, 6))
+    x_plot = [A + i * (B - A) / 100.0 for i in range(101)]
+    y_plot = [f(xi) for xi in x_plot]
+    plt.plot(x_plot, y_plot, color='gray', label="f(x)")
+    plt.axhline(y=0.0, color='black', linestyle='-')
+
+    for r in resultados:
+        plt.plot(r["x"], f(r["x"]), marker='o', label=r["nombre"], linestyle='None', markersize=8)
+
+    plt.title("Función y raíces encontradas")
+    plt.xlabel("x")
+    plt.ylabel("f(x)")
+    plt.grid(True, linestyle="--", alpha=0.5)
+    plt.legend()
+    plt.savefig(f"{carpeta}/funcion.png", bbox_inches='tight')
+    plt.close()
 
 
 def main():
